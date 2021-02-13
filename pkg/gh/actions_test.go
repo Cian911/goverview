@@ -1,11 +1,11 @@
-package github
+package gh
 
 import (
 	"context"
-	"fmt"
+	"os"
 	"testing"
 
-	gh "github.com/google/go-github/github"
+	"github.com/google/go-github/v33/github"
 )
 
 func TestListRecentWorkflows(t *testing.T) {
@@ -13,11 +13,13 @@ func TestListRecentWorkflows(t *testing.T) {
 		ctx   = context.Background()
 		owner = "Cian911"
 		repo  = "gomerge"
+		token = os.Getenv("GITHUB_TOKEN")
 	)
 
 	t.Run("It returns a list of recent workflows", func(t *testing.T) {
-		opts := &gh.ListOptions{Page: 1, PerPage: 5}
-		workflows, res, err := ListRecentWorkflows(ctx, owner, repo, opts)
-		fmt.Println(*workflows)
+		opts := &github.ListOptions{Page: 1, PerPage: 5}
+		c := NewClientWithToken(ctx, token)
+
+		c.ListRecentWorkflows(ctx, owner, repo, opts)
 	})
 }
