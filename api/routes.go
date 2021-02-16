@@ -3,9 +3,12 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/cian911/goverview/pkg/gh"
@@ -56,7 +59,24 @@ func (fn rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
+func serveTemplate(w http.ResponseWriter, r *http.Request) error {
+	lp := filepath.Join("./web/html/layouts", "layout.html")
+	fp := filepath.Join("./web/html", "index.html")
+
+	tpl, err := template.ParseFiles(lp, fp)
+	if err != nil {
+		fmt.Errorf("%v", err)
+		return err
+	}
+	tpl.ExecuteTemplate(w, "layout", nil)
+	return nil
+}
+
 func HandleRoutes(router *mux.Router) {
+	// Web Routes
+	router.Handle("/", rootHandler(serveTemplate))
+
+	// API routes
 	router.Handle("/api/runs", rootHandler(workflowRuns))
 	router.Handle("/api/runs/{id}", rootHandler(workflowRun))
 }
