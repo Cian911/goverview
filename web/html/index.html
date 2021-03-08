@@ -1,5 +1,11 @@
 {{define "title"}}Goverview{{end}}
 
-{{define "body"}}
+{{define "content"}}
 <h1>Index Page</h1>
+
+<div class="workflows-runs">
+  {{ .TotalCount }}
+   <br>
+  {{ .WorkflowRuns }}
+</div>
 {{end}}

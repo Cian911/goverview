@@ -3,15 +3,13 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/cian911/goverview/pkg/gh"
+	"github.com/cian911/goverview/web/html"
 	"github.com/google/go-github/v33/github"
 	"github.com/gorilla/mux"
 )
@@ -59,22 +57,24 @@ func (fn rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
-func serveTemplate(w http.ResponseWriter, r *http.Request) error {
-	lp := filepath.Join("./web/html/layouts", "layout.html")
-	fp := filepath.Join("./web/html", "index.html")
-
-	tpl, err := template.ParseFiles(lp, fp)
-	if err != nil {
-		fmt.Errorf("%v", err)
-		return err
-	}
-	tpl.ExecuteTemplate(w, "layout", nil)
+func serveIndex(w http.ResponseWriter, r *http.Request) error {
+	// lp := filepath.Join("./web/html/layouts", "layout.html")
+	// fp := filepath.Join("./web/html", "index.html")
+	//
+	// tpl, err := template.ParseFiles(lp, fp)
+	// if err != nil {
+	//   fmt.Errorf("%v", err)
+	//   return err
+	// }
+	runs, _, _ := c.RecentWorkflowRuns(ctx, "Cian911", "gomerge", opts)
+	html.IndexPage(w, runs)
 	return nil
 }
 
 func HandleRoutes(router *mux.Router) {
 	// Web Routes
-	router.Handle("/", rootHandler(serveTemplate))
+	router.Handle("/", rootHandler(serveIndex))
+	// router.Handle("/workflow/{id}", rootHandler(serveWorkflow))
 
 	// API routes
 	router.Handle("/api/runs", rootHandler(workflowRuns))
