@@ -1,0 +1,20 @@
+<h1>Actions Page</h1>
+{{define "title"}}Actions{{end}}
+
+{{define "content"}}
+<div class="row row-cols-4">
+  {{ range $val := .Jobs}}
+    <div class="col">
+      <div class="card">
+        <div class="card-body">
+          <div class="card-title">{{ $val.Name }} - <div class="text-secondary">#{{ $val.Status }}</div></div>
+          <div class="card-text">
+            {{ $val.StartedAt }} - {{ $val.CompletedAt }}
+            {{ $val.Conclusion }}
+          </div>
+        </div>
+      </div>
+    </div>
+  {{ end }}
+</div>
+{{end}}

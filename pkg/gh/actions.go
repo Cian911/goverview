@@ -15,3 +15,8 @@ func (c *Client) WorkflowRunById(ctx context.Context, owner, repo string, runId 
 	run, resp, err := c.gh.Actions.GetWorkflowRunByID(ctx, owner, repo, runId)
 	return run, resp, err
 }
+
+func (c *Client) JobsListWorkflowRun(ctx context.Context, owner, repo string, runID int64, opts *github.ListWorkflowJobsOptions) (*github.Jobs, *github.Response, error) {
+	jobs, resp, err := c.gh.Actions.ListWorkflowJobs(ctx, owner, repo, runID, opts)
+	return jobs, resp, err
+}

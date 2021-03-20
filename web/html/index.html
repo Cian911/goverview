@@ -8,9 +8,12 @@
     <div class="col">
       <div class="card">
         <div class="card-body">
-          <div class="card-title">{{ $val.Repository.Name }}</div>
+          <div class="card-title">{{ $val.Repository.Name }} - <div class="text-secondary">#{{ $val.RunNumber }}</div></div>
           <div class="card-text">
             {{ $val.Event }} - {{ $val.Status }}
+            {{ $val.ID }}
+            {{ $val.NodeID }}
+            <a href="/workflow/{{ $val.ID }}">#{{ $val.ID }}</a>
           </div>
         </div>
       </div>

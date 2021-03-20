@@ -16,6 +16,10 @@ func IndexPage(w io.Writer, runs *github.WorkflowRuns) error {
 	return index.Execute(w, runs)
 }
 
+func ActionsPage(w io.Writer, jobs *github.Jobs) error {
+	index := parse("actions.html")
+	return index.Execute(w, jobs)
+}
 func parse(file string) *template.Template {
 	return template.Must(template.New("layout.html").ParseFS(files, "layout.html", file))
 }

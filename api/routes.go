@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 
+	wcache "github.com/cian911/goverview/pkg/cache"
 	"github.com/cian911/goverview/pkg/gh"
 	"github.com/cian911/goverview/web/html"
 	"github.com/google/go-github/v33/github"
@@ -15,9 +16,11 @@ import (
 )
 
 var (
-	ctx  = context.Background()
-	c    = gh.NewClientWithToken(ctx, os.Getenv("GITHUB_TOKEN"))
-	opts = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
+	ctx         = context.Background()
+	c           = gh.NewClientWithToken(ctx, os.Getenv("GITHUB_TOKEN"))
+	cacheClient = wcache.CacheClient()
+	opts        = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
+	jobOpts     = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
 )
 
 type rootHandler func(http.ResponseWriter, *http.Request) error
@@ -58,23 +61,29 @@ func (fn rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveIndex(w http.ResponseWriter, r *http.Request) error {
-	// lp := filepath.Join("./web/html/layouts", "layout.html")
-	// fp := filepath.Join("./web/html", "index.html")
-	//
-	// tpl, err := template.ParseFiles(lp, fp)
-	// if err != nil {
-	//   fmt.Errorf("%v", err)
-	//   return err
-	// }
-	runs, _, _ := c.RecentWorkflowRuns(ctx, "Cian911", "gomerge", opts)
+	runs, _, _ := c.RecentWorkflowRuns(ctx, "storyful", "droptube-poc", opts)
 	html.IndexPage(w, runs)
 	return nil
 }
 
+func serveActions(w http.ResponseWriter, r *http.Request) error {
+	vars := mux.Vars(r)
+	key := vars["id"]
+	runId, err := strconv.ParseInt(key, 10, 64)
+
+	if err != nil {
+		return NewHTTPError(err, 400, "Bad request : invalid ID.")
+	}
+
+	// runs, _, _ := c.RecentWorkflowRuns(ctx, "storyful", "droptube-poc", opts)
+	jobs, _, _ := c.JobsListWorkflowRun(ctx, "storyful", "droptube-poc", runId, jobOpts)
+	html.ActionsPage(w, jobs)
+	return nil
+}
 func HandleRoutes(router *mux.Router) {
 	// Web Routes
-	router.Handle("/", rootHandler(serveIndex))
-	// router.Handle("/workflow/{id}", rootHandler(serveWorkflow))
+	router.Handle("/", cacheClient.Middleware(rootHandler(serveIndex)))
+	router.Handle("/workflow/{id}", cacheClient.Middleware(rootHandler(serveActions)))
 
 	// API routes
 	router.Handle("/api/runs", rootHandler(workflowRuns))
