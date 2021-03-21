@@ -9,6 +9,7 @@ import (
 )
 
 //go:embed *
+//go:embed test.css
 var files embed.FS
 
 func IndexPage(w io.Writer, runs *github.WorkflowRuns) error {

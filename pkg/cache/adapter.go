@@ -12,7 +12,7 @@ import (
 func CacheClient() *cache.Client {
 	ringOpt := &redis.RingOptions{
 		Addrs: map[string]string{
-			"server": "127.0.0.1:6378",
+			"server": ":6379",
 		},
 	}
 
