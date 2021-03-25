@@ -88,6 +88,7 @@ func HandleRoutes(router *mux.Router) {
 	// API routes
 	router.Handle("/api/runs", rootHandler(workflowRuns))
 	router.Handle("/api/runs/{id}", rootHandler(workflowRun))
+	router.Handle("/api/workflows/{id}", rootHandler(workflowJob))
 }
 
 func workflowRuns(w http.ResponseWriter, r *http.Request) error {
@@ -110,6 +111,28 @@ func workflowRun(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	run, resp, err := c.WorkflowRunById(ctx, "Cian911", "gomerge", runId)
+
+	if resp.StatusCode == 404 {
+		return NewHTTPError(nil, 404, "The requested workflow run was not found.")
+	}
+
+	if err != nil {
+		return NewHTTPError(err, resp.StatusCode, "Error from Github API. Please check your token for the correct scopes, access rights and/or rate limits.")
+	}
+	json.NewEncoder(w).Encode(run)
+	return nil
+}
+
+func workflowJob(w http.ResponseWriter, r *http.Request) error {
+	vars := mux.Vars(r)
+	key := vars["id"]
+	runId, err := strconv.ParseInt(key, 10, 64)
+
+	if err != nil {
+		return NewHTTPError(err, 400, "Bad request : invalid ID.")
+	}
+
+	run, resp, err := c.JobsListWorkflowRun(ctx, "storyful", "base", runId, jobOpts)
 
 	if resp.StatusCode == 404 {
 		return NewHTTPError(nil, 404, "The requested workflow run was not found.")
