@@ -6,6 +6,11 @@ import (
 	"github.com/google/go-github/v33/github"
 )
 
+type ActionData struct {
+	Run  *github.WorkflowRun
+	Jobs *github.Jobs
+}
+
 func (c *Client) RecentWorkflowRuns(ctx context.Context, owner, repo string, opts *github.ListWorkflowRunsOptions) (*github.WorkflowRuns, *github.Response, error) {
 	workflowRuns, resp, err := c.gh.Actions.ListRepositoryWorkflowRuns(ctx, owner, repo, opts)
 	return workflowRuns, resp, err

@@ -2,6 +2,9 @@
 
 {{define "content"}}
 
+{{ .Run }}
+<!-- {{ .Job.Jobs }} -->
+
 <!-- <div class="row g-0"> -->
   <!-- <div class="col-sm-6 col-md-8"> -->
   <!--   <div class="row"> -->
@@ -37,7 +40,7 @@
         <p class="lead">
           <span class="badge bg-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="color: white;">
             <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"></path>
-            </svg>Completed Success</span> Cian911 deployed <span class="badge bg-primary">my-feature-34534</span> to production
+            </svg>{{ .Run.Status }} - {{ .Run.Conclusion }}</span> Cian911 ran<span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
         </p>
       </div>
     </div>

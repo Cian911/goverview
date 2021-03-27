@@ -75,9 +75,14 @@ func serveActions(w http.ResponseWriter, r *http.Request) error {
 		return NewHTTPError(err, 400, "Bad request : invalid ID.")
 	}
 
-	// runs, _, _ := c.RecentWorkflowRuns(ctx, "storyful", "droptube-poc", opts)
+	run, _, _ := c.WorkflowRunById(ctx, "storyful", "droptube-poc", runId)
 	jobs, _, _ := c.JobsListWorkflowRun(ctx, "storyful", "droptube-poc", runId, jobOpts)
-	html.ActionsPage(w, jobs)
+	data := gh.ActionData{
+		Run:  run,
+		Jobs: jobs,
+	}
+
+	html.ActionsPage(w, &data)
 	return nil
 }
 func HandleRoutes(router *mux.Router) {
