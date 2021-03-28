@@ -97,7 +97,7 @@ func HandleRoutes(router *mux.Router) {
 }
 
 func workflowRuns(w http.ResponseWriter, r *http.Request) error {
-	runs, resp, err := c.RecentWorkflowRuns(ctx, "Cian911", "gomerge", opts)
+	runs, resp, err := c.RecentWorkflowRuns(ctx, "storyful", "droptube-poc", opts)
 	if err != nil {
 		return NewHTTPError(err, resp.StatusCode, "Error from Github API. Please check your token for the correct scopes, access rights and/or rate limits.")
 	}
@@ -115,7 +115,7 @@ func workflowRun(w http.ResponseWriter, r *http.Request) error {
 		return NewHTTPError(err, 400, "Bad request : invalid ID.")
 	}
 
-	run, resp, err := c.WorkflowRunById(ctx, "Cian911", "gomerge", runId)
+	run, resp, err := c.WorkflowRunById(ctx, "storyful", "droptube-poc", runId)
 
 	if resp.StatusCode == 404 {
 		return NewHTTPError(nil, 404, "The requested workflow run was not found.")
@@ -137,7 +137,7 @@ func workflowJob(w http.ResponseWriter, r *http.Request) error {
 		return NewHTTPError(err, 400, "Bad request : invalid ID.")
 	}
 
-	run, resp, err := c.JobsListWorkflowRun(ctx, "storyful", "base", runId, jobOpts)
+	run, resp, err := c.JobsListWorkflowRun(ctx, "storyful", "droptube-poc", runId, jobOpts)
 
 	if resp.StatusCode == 404 {
 		return NewHTTPError(nil, 404, "The requested workflow run was not found.")
