@@ -24,5 +24,11 @@ func ActionsPage(w io.Writer, jobs *gh.ActionData) error {
 }
 
 func parse(file string) *template.Template {
-	return template.Must(template.New("layout.html").ParseFS(files, "layout.html", file))
+	funcs := template.FuncMap{
+		"toString": func(str *string) string {
+			return *str
+		},
+	}
+
+	return template.Must(template.New("layout.html").Funcs(funcs).ParseFS(files, "layout.html", file))
 }

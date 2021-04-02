@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -82,7 +83,11 @@ func serveActions(w http.ResponseWriter, r *http.Request) error {
 		Jobs: jobs,
 	}
 
-	html.ActionsPage(w, &data)
+	err = html.ActionsPage(w, &data)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error rendering actions template: %v", err))
+	}
+
 	return nil
 }
 func HandleRoutes(router *mux.Router) {
