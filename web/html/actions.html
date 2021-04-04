@@ -11,9 +11,22 @@
         <h2 class="bg-dark" style="padding:5px;display:inline-block;">
           {{ .Run.Repository.FullName }}
         </h2>
-        <h3 class="display-4">{{ .Run.Event }}<span class="text-secondary">#{{ (index .Run.PullRequests 0).Number }}</span></h3>
+        <h3 class="display-4">
+          {{ .Run.Event }}
+          {{ if .Run.PullRequests }}
+          <span class="text-secondary">
+            #{{ (index .Run.PullRequests 0).Number }}
+          </span>
+          {{end}}
+        </h3>
         <p class="lead">
-          <span class="badge {{if eq (.Run.Conclusion | toString ) "failure"}}bg-danger{{end}} {{if eq (.Run.Conclusion | toString) "success"}}bg-success{{end}} {{if eq (.Run.Conclusion | toString) "in_progress"}}bg-warning{{end}}"><i class="bi bi-check"></i>{{ .Run.Conclusion }}</span> Cian911 ran <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
+          {{if or (eq (.Run.Status | toString) "queued") (eq (.Run.Status | toString) "in_progress") }}
+          <span class="badge bg-warning">{{ .Run.Status }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
+          {{end}}
+          {{if .Run.Conclusion }}
+          <span class="badge {{if eq (.Run.Conclusion | toString ) "failure"}}bg-danger{{end}} {{if eq (.Run.Conclusion | toString) "success"}}bg-success{{end}} {{if eq (.Run.Conclusion | toString) "in_progress"}}bg-warning{{end}} {{if eq (.Run.Conclusion | toString) "startup_failure"}}bg-danger{{end}}">{{ .Run.Conclusion }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
+          {{else}}
+          {{end}}
         </p>
       </div>
     </div>
@@ -28,9 +41,20 @@
         <div class="step-container" style="padding: 10px;">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Step #{{ $index }}: {{ $val.Name }}</h5>
-              <p class="lead">
-                <span><i class="bi {{if eq ($val.Conclusion | toString ) "failure"}}bi-x-octagon-fill{{end}} {{if eq ($val.Conclusion | toString) "success"}}bi-check{{end}} {{if eq ($val.Conclusion | toString) "in_progress"}}bi-gear{{end}} {{if eq ($val.Conclusion | toString) "skipped"}}bi-exclamation-circle{{end}}"></i> {{$val.Conclusion}} </span>
+              <h5 class="card-title">Step #{{ $index }}: {{ $val.Name }} {{if eq ($val.Status | toString) "queued"}}<i class="bi bi-exclamation-circle icn-spinner"></i>{{end}}{{if eq ($val.Status | toString) "in_progress"}}<i class="bi bi-arrow-clockwise"></i>{{end}}</h5>
+              <p class="lead card-lead">
+                <span class="fs-6 text text-muted">
+                  {{if or (eq ($val.Status | toString) "queued") (eq ($val.Status | toString) "in_progress")}}
+                  <span><i class="step-icon bi {{if eq ($val.Status | toString ) "failure"}}bi-x{{end}} {{if eq ($val.Status | toString) "success"}}bi-check{{end}} {{if eq ($val.Status | toString) "in_progress"}}bi-gear{{end}} {{if eq ($val.Status | toString) "skipped"}}bi-exclamation-circle{{end}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
+                  {{end}}
+                  {{if $val.Conclusion}}
+                  <span><i class="step-icon bi {{if eq ($val.Conclusion | toString ) "failure"}}bi-x{{end}} {{if eq ($val.Conclusion | toString) "success"}}bi-check{{end}} {{if eq ($val.Conclusion | toString) "in_progress"}}bi-gear{{end}} {{if eq ($val.Conclusion | toString) "skipped"}}bi-exclamation-circle{{end}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
+                  {{end}}
+                  {{if $val.CompletedAt}}
+                  | <span>Finished: {{$val.CompletedAt | timeAgo }}</span>
+                  {{end}}
+                </span>
+                <a href="{{ $val.HTMLURL }}" class="btn btn-light btn-sm btn-run" target="_blank">Check Step</a>
               </p>
             </div>
           </div>
@@ -42,7 +66,7 @@
   <!-- End Steps -->
 
   <div class="col-12 col-lg-4">
-    <ul class="list-group">
+    <ul class="list-group actions-list-group">
       <li class="list-group-item"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
         <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
         </svg> Github Action Logs</li>
@@ -53,4 +77,22 @@
     </ul>
   </div>
 </div>
+
+<script>
+  let subscribers = {};
+  const websocket = new WebSocket("ws://localhost:8080/ws");
+
+  websocket.onopen = function(event) {
+    console.log("Successfully connected to websocket server");
+  };
+
+  websocket.onerror = function(error) {
+    console.log("Error connecting to websocket server");
+    console.log(error);
+  };
+
+  websocket.onmessage = function(event) {
+    subscribers = JSON.parse(event.data);
+  };
+</script>
 {{end}}

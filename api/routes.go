@@ -90,6 +90,7 @@ func serveActions(w http.ResponseWriter, r *http.Request) error {
 
 	return nil
 }
+
 func HandleRoutes(router *mux.Router) {
 	// Web Routes
 	router.Handle("/", cacheClient.Middleware(rootHandler(serveIndex)))

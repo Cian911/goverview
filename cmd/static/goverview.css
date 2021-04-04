@@ -1,0 +1,53 @@
+.actions-list-group {
+  padding: 10px;
+}
+
+.step-icon {
+  padding-right: 5px;
+}
+
+.bi-x {
+  color: red;
+}
+
+.bi-check {
+  color: green;
+}
+
+.bi-gear {
+  color: orange;
+}
+
+.bi-exclamation-circle {
+  color: orange;
+}
+
+.bi-arrow-clockwise {
+  color: blue;
+}
+
+.card-lead {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-run {
+  display: inline-block;
+  margin-top: 10px;
+  width: 120px;
+  border-color: #E6E7E7;
+}
+
+.icn-spinner {
+  animation: spin-animation 0.5s infinite;
+  display: inline-block;
+}
+
+@keyframes spin-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(359deg);
+  }
+}
