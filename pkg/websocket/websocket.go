@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/cian911/goverview/pkg/gh"
@@ -14,7 +15,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const tickerTime := 15 * time.Second
+const tickerTime = 15 * time.Second
 
 var (
 	ctx     = context.Background()
@@ -40,8 +41,14 @@ func Upgrade(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 	return ws, nil
 }
 
-func Writer(conn *websocket.Conn) {
-	runId := int64(717189475)
+func Writer(conn *websocket.Conn, vars map[string]string) {
+	runId, err := strconv.ParseInt(vars["id"], 10, 64)
+
+	if err != nil {
+		log.Fatalf("Could not parse websockert param: %v", err)
+	}
+
+	repository := vars["repo"]
 
 	for {
 		ticker := time.NewTicker(tickerTime)
@@ -49,8 +56,8 @@ func Writer(conn *websocket.Conn) {
 		for t := range ticker.C {
 			fmt.Printf("Doing: %v\n", t)
 
-			run, _, _ := c.WorkflowRunById(ctx, "storyful", "droptube-poc", runId)
-			jobs, _, _ := c.JobsListWorkflowRun(ctx, "storyful", "droptube-poc", runId, jobOpts)
+			run, _, _ := c.WorkflowRunById(ctx, "storyful", repository, runId)
+			jobs, _, _ := c.JobsListWorkflowRun(ctx, "storyful", repository, runId, jobOpts)
 			data := gh.ActionData{
 				Run:  run,
 				Jobs: jobs,
