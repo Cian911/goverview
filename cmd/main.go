@@ -26,10 +26,14 @@ func main() {
 }
 
 func socket(w http.ResponseWriter, r *http.Request) {
+	vars := map[string]string{
+		"id":   r.FormValue("id"),
+		"repo": r.FormValue("repo"),
+	}
 	ws, err := websocket.Upgrade(w, r)
 	if err != nil {
 		fmt.Fprintf(w, "%+v\n", err)
 	}
 
-	go websocket.Writer(ws)
+	go websocket.Writer(ws, vars)
 }
