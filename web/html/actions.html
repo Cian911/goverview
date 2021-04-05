@@ -19,9 +19,9 @@
           </span>
           {{end}}
         </h3>
-        <p class="lead">
+        <p class="lead ws-lead">
           {{if or (eq (.Run.Status | toString) "queued") (eq (.Run.Status | toString) "in_progress") }}
-          <span class="badge bg-warning">{{ .Run.Status }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
+          <span class="badge bg-warning ws-lead-status">{{ .Run.Status }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
           {{end}}
           {{if .Run.Conclusion }}
           <span class="badge {{if eq (.Run.Conclusion | toString ) "failure"}}bg-danger{{end}} {{if eq (.Run.Conclusion | toString) "success"}}bg-success{{end}} {{if eq (.Run.Conclusion | toString) "in_progress"}}bg-warning{{end}} {{if eq (.Run.Conclusion | toString) "startup_failure"}}bg-danger{{end}}">{{ .Run.Conclusion }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
@@ -79,20 +79,38 @@
 </div>
 
 <script>
-  let subscribers = {};
-  const websocket = new WebSocket("ws://localhost:8080/ws");
-
-  websocket.onopen = function(event) {
+  function connect() {
+    const websocket = new WebSocket("ws://localhost:8080/ws?id={{.Run.ID}}&repo={{.Run.Repository.Name}}");
+    websocket.onopen = function(event) {
     console.log("Successfully connected to websocket server");
-  };
+    };
 
-  websocket.onerror = function(error) {
-    console.log("Error connecting to websocket server");
-    console.log(error);
-  };
+    websocket.onerror = function(error) {
+      console.log("Error connecting to websocket server");
+      console.log(error);
+    };
 
-  websocket.onmessage = function(event) {
-    subscribers = JSON.parse(event.data);
-  };
+    websocket.onmessage = function(event) {
+      actions = JSON.parse(event.data);
+      if(actions.Run.status == "queued" || actions.Run.status == "in_progress") {
+        $('.ws-lead-status').addClass('bg-warning')
+      } else if(actions.Run.status == "complete") {
+        if(actions.Run.conclusion == "success") {
+          $('.ws-lead-status').addClass('bg-success')
+        } else if(actions.Run.conclusion == "failure" || actions.Run.conclusion == "cancelled" || actions.Run.conclusion == "timed_out") {
+          $('.ws-lead-status').addClass('bg-danger')
+        }
+      }
+      $('.ws-lead-status').text(actions.Run.status)
+    };
+  }
+
+  let actions = {};
+
+  var status = "{{.Run.Status}}";
+  connect();
+  if (status == "queued" || status == "in_progress") {
+    <!-- connect(); -->
+  }
 </script>
 {{end}}
