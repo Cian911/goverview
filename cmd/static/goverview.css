@@ -6,6 +6,15 @@
   padding-right: 5px;
 }
 
+.step-icon:before {
+  font-size: 24px;
+}
+
+.btn-jumbo {
+  float: right;
+  margin-top: 5px;
+}
+
 .bi-x {
   color: red;
 }
@@ -50,4 +59,10 @@
   100% {
     transform: rotate(359deg);
   }
+}
+
+.step-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
 }

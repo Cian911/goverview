@@ -8,6 +8,7 @@
   <div class="col-md-12">
     <div class="jumbotron jumbotron-fluid" style="background-color: #212121;color: white;padding: 25px">
       <div class="container">
+        <button class="btn btn-light btn-jumbo" onclick="history.back(-1);">Back</button>
         <h2 class="bg-dark" style="padding:5px;display:inline-block;">
           {{ .Run.Repository.FullName }}
         </h2>
@@ -20,11 +21,11 @@
           {{end}}
         </h3>
         <p class="lead ws-lead">
-          {{if or (eq (.Run.Status | toString) "queued") (eq (.Run.Status | toString) "in_progress") }}
+          {{if or (eq (.Run.Status | toString) "queued") (eq (.Run.Status | toString) "in_progress") (eq (.Run.Status | toString) "waiting") (eq (.Run.Status | toString) "requested")}}
           <span class="badge bg-warning ws-lead-status">{{ .Run.Status }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
           {{end}}
           {{if .Run.Conclusion }}
-          <span class="badge {{if eq (.Run.Conclusion | toString ) "failure"}}bg-danger{{end}} {{if eq (.Run.Conclusion | toString) "success"}}bg-success{{end}} {{if eq (.Run.Conclusion | toString) "in_progress"}}bg-warning{{end}} {{if eq (.Run.Conclusion | toString) "startup_failure"}}bg-danger{{end}}">{{ .Run.Conclusion }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
+          <span class="badge {{.Run.Conclusion | colorCase}}">{{ .Run.Conclusion }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
           {{else}}
           {{end}}
         </p>
@@ -45,15 +46,34 @@
               <p class="lead card-lead">
                 <span class="fs-6 text text-muted">
                   {{if or (eq ($val.Status | toString) "queued") (eq ($val.Status | toString) "in_progress")}}
-                  <span><i class="step-icon bi {{if eq ($val.Status | toString ) "failure"}}bi-x{{end}} {{if eq ($val.Status | toString) "success"}}bi-check{{end}} {{if eq ($val.Status | toString) "in_progress"}}bi-gear{{end}} {{if eq ($val.Status | toString) "skipped"}}bi-exclamation-circle{{end}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
+                  <span><i class="step-icon bi {{$val.Status | iconCase}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
                   {{end}}
                   {{if $val.Conclusion}}
-                  <span><i class="step-icon bi {{if eq ($val.Conclusion | toString ) "failure"}}bi-x{{end}} {{if eq ($val.Conclusion | toString) "success"}}bi-check{{end}} {{if eq ($val.Conclusion | toString) "in_progress"}}bi-gear{{end}} {{if eq ($val.Conclusion | toString) "skipped"}}bi-exclamation-circle{{end}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
+                  <span><i class="step-icon bi {{$val.Conclusion | iconCase}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
                   {{end}}
                   {{if $val.CompletedAt}}
                   | <span>Finished: {{$val.CompletedAt | timeAgo }}</span>
                   {{end}}
                 </span>
+
+                <div class="accordian" id="steps-accordian">
+                  {{range $i, $step := $val.Steps}}
+                  <div class="accordian-item">
+                    <h2 class="accordion-header" id="heading-{{$step.Name | compact}}-{{$step.Number}}">
+                      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{$step.Name | compact}}-{{$step.Number}}" aria-expanded="false" aria-controls="{{$step.Name | compact}}-{{$step.Number}}">
+                        {{if $step.Conclusion}}<i class="step-icon bi {{ $step.Conclusion | iconCase }}"></i>{{else}}<i class="step-icon bi {{ $step.Status | iconCase }}"></i>{{end}} #{{$step.Number}} {{ $step.Name }}
+                      </button>
+                    </h2>
+                    <div id="{{$step.Name | compact}}-{{$step.Number}}" class="accordion-collapse collapse" aria-labelledby="heading-{{$step.Name | compact}}-{{$step.Number}}" data-bs-parent="#steps-accordian">
+                      <div class="accordion-body step-item">
+                        Started at: {{ $step.StartedAt | timeAgo }} | Finished at: {{ $step.CompletedAt | timeAgo }}
+                        <a href="{{ $val.HTMLURL }}" class="btn btn-light btn-sm btn-run" target="_blank">View Logs</a>
+                      </div>
+                    </div>
+                  </div>
+                  {{end}}
+                </div>
+
                 <a href="{{ $val.HTMLURL }}" class="btn btn-light btn-sm btn-run" target="_blank">Check Step</a>
               </p>
             </div>
@@ -108,9 +128,10 @@
   let actions = {};
 
   var status = "{{.Run.Status}}";
-  connect();
+  <!-- connect(); -->
   if (status == "queued" || status == "in_progress") {
     <!-- connect(); -->
+    console.log('hi');
   }
 </script>
 {{end}}
