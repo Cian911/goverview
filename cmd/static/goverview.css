@@ -2,8 +2,16 @@
   padding: 10px;
 }
 
-.step-icon {
+.hightlight {
+  background-color: #ccc !important;
+}
+
+.job-icon {
   padding-right: 5px;
+}
+
+.job-icon:before {
+  font-size: 24px;
 }
 
 .step-icon:before {
@@ -32,7 +40,7 @@
 }
 
 .bi-arrow-clockwise {
-  color: blue;
+  color: #3680D1;
 }
 
 .card-lead {
@@ -48,7 +56,7 @@
 }
 
 .icn-spinner {
-  animation: spin-animation 0.5s infinite;
+  animation: spin-animation 0.8s infinite;
   display: inline-block;
 }
 
@@ -65,4 +73,16 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+}
+
+.bg-dang {
+  background-color: #dc3545;
+}
+
+.bg-warn {
+  background-color: #ffc107;
+}
+
+.bg-succ {
+  background-color: #198754;
 }

@@ -37,25 +37,28 @@ func parse(file string) *template.Template {
 			str1 := strings.Replace(*str, " ", "-", -1)
 			str2 := strings.Replace(str1, "@", "", -1)
 			str3 := strings.Replace(str2, "/", "", -1)
-			return strings.ToLower(str3)
+			str4 := strings.Replace(str3, ":", "", -1)
+			return strings.ToLower(str4)
 		},
 		"colorCase": func(str *string) string {
 			switch *str {
 			case "cancelled", "failure", "timed_out", "startup_failure":
-				return "bg-danger"
+				return "bg-dang"
 			case "queued", "in_progress", "waiting", "requested", "skipped":
-				return "bg-warning"
+				return "bg-warn"
 			case "success":
-				return "bg-success"
+				return "bg-succ"
 			default:
-				return "bg-warning"
+				return "bg-warn"
 			}
 		},
 		"iconCase": func(str *string) string {
 			switch *str {
 			case "cancelled", "failure", "timed_out", "startup_failure":
 				return "bi-x"
-			case "queued", "in_progress", "waiting", "requested", "skipped":
+			case "queued", "in_progress":
+				return "bi-arrow-clockwise icn-spinner"
+			case "waiting", "requested", "skipped":
 				return "bi-exclamation-circle"
 			case "success":
 				return "bi-check"

@@ -22,10 +22,10 @@
         </h3>
         <p class="lead ws-lead">
           {{if or (eq (.Run.Status | toString) "queued") (eq (.Run.Status | toString) "in_progress") (eq (.Run.Status | toString) "waiting") (eq (.Run.Status | toString) "requested")}}
-          <span class="badge bg-warning ws-lead-status">{{ .Run.Status }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
+          <span class="badge bg-warn ws-lead-status"><i class="bi {{.Run.Status | iconCase}} ws-lead-icon" style="color: white;"></i>{{ .Run.Status }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
           {{end}}
           {{if .Run.Conclusion }}
-          <span class="badge {{.Run.Conclusion | colorCase}}">{{ .Run.Conclusion }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
+          <span class="badge {{.Run.Conclusion | colorCase}} ws-lead-status"><i class="bi {{.Run.Conclusion | iconCase}} ws-lead-icon" style="color: white;"></i>{{ .Run.Conclusion }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
           {{else}}
           {{end}}
         </p>
@@ -42,14 +42,14 @@
         <div class="step-container" style="padding: 10px;">
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Step #{{ $index }}: {{ $val.Name }} {{if eq ($val.Status | toString) "queued"}}<i class="bi bi-exclamation-circle icn-spinner"></i>{{end}}{{if eq ($val.Status | toString) "in_progress"}}<i class="bi bi-arrow-clockwise"></i>{{end}}</h5>
+              <h5 class="card-title">Step #{{ $index }}: {{ $val.Name }} <i class="bi {{$val.Status | iconCase}}"></i></h5>
               <p class="lead card-lead">
                 <span class="fs-6 text text-muted">
                   {{if or (eq ($val.Status | toString) "queued") (eq ($val.Status | toString) "in_progress")}}
-                  <span><i class="step-icon bi {{$val.Status | iconCase}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
+                  <span><i class="job-icon bi {{$val.Status | iconCase}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
                   {{end}}
                   {{if $val.Conclusion}}
-                  <span><i class="step-icon bi {{$val.Conclusion | iconCase}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
+                  <span><i class="job-icon bi {{$val.Conclusion | iconCase}}"></i>Started: {{$val.StartedAt | timeAgo }}</span>
                   {{end}}
                   {{if $val.CompletedAt}}
                   | <span>Finished: {{$val.CompletedAt | timeAgo }}</span>
@@ -66,7 +66,11 @@
                     </h2>
                     <div id="{{$step.Name | compact}}-{{$step.Number}}" class="accordion-collapse collapse" aria-labelledby="heading-{{$step.Name | compact}}-{{$step.Number}}" data-bs-parent="#steps-accordian">
                       <div class="accordion-body step-item">
-                        Started at: {{ $step.StartedAt | timeAgo }} | Finished at: {{ $step.CompletedAt | timeAgo }}
+                        {{if $step.StartedAt}}
+                        Started at: {{ $step.StartedAt | timeAgo }}
+                        {{else}}
+                        Status: {{ $step.Status }}
+                        {{end}}
                         <a href="{{ $val.HTMLURL }}" class="btn btn-light btn-sm btn-run" target="_blank">View Logs</a>
                       </div>
                     </div>
@@ -111,26 +115,99 @@
     };
 
     websocket.onmessage = function(event) {
-      actions = JSON.parse(event.data);
-      if(actions.Run.status == "queued" || actions.Run.status == "in_progress") {
-        $('.ws-lead-status').addClass('bg-warning')
-      } else if(actions.Run.status == "complete") {
-        if(actions.Run.conclusion == "success") {
-          $('.ws-lead-status').addClass('bg-success')
-        } else if(actions.Run.conclusion == "failure" || actions.Run.conclusion == "cancelled" || actions.Run.conclusion == "timed_out") {
-          $('.ws-lead-status').addClass('bg-danger')
-        }
-      }
-      $('.ws-lead-status').text(actions.Run.status)
+      action = JSON.parse(event.data);
+      updateRun();
+
     };
   }
 
-  let actions = {};
+  function updateRun() {
+    icon = "";
+    background = "";
+    if(action.Run.conclusion) {
+      icon = getIcon(action.Run.conclusion);
+      $('.ws-lead-status').text(action.Run.conclusion)
+      $('.ws-lead-status').replaceWith('<span class="badge '+getBackground(action.Run.conclusion)+' ws-lead-status"><i class="bi '+getIcon(action.Run.conclusion)+' ws-lead-icon" style="color: white;"></i>'+action.Run.conclusion+'</span>')
+      $('.ws-lead-status').effect("highlight", {}, 1500);
+    } else {
+      icon = getIcon(action.Run.status);
+      $('.ws-lead-status').text(action.Run.status)
+      $('.ws-lead-status').replaceWith('<span class="badge '+getBackground(action.Run.status)+' ws-lead-status"><i class="bi '+getIcon(action.Run.status)+' ws-lead-icon" style="color: white;"></i>'+action.Run.status+'</span>')
+      $('.ws-lead-status').effect("highlight", {}, 1500);
+    }
+  }
+
+  function getIcon(str) {
+    switch(str) {
+      case "cancelled":
+        return "bi-x";
+        break;
+      case "failure":
+        return "bi-x";
+        break;
+      case "timed_out":
+        return "bi-x";
+        break;
+      case "startup_failure":
+        return "bi-x";
+        break;
+      case "queued":
+        return "bi-arrow-clockwise icn-spinner";
+        break;
+      case "in_progress":
+        return "bi-arrow-clockwise icn-spinner";
+        break;
+      case "success":
+        return "bi-check";
+        break;
+      default:
+        return "bi-exclamation-circle";
+    }
+  }
+
+  function getBackground(str) {
+    switch(str) {
+      case "cancelled":
+        return "bg-dang";
+        break;
+      case "failure":
+        return "bg-dang";
+        break;
+      case "timed_out":
+        return "bg-dang";
+        break;
+      case "startup_failure":
+        return "bg-dang";
+        break;
+      case "queued":
+        return "bg-warn";
+        break;
+      case "in_progress":
+        return "bg-warn";
+        break;
+      case "waiting":
+        return "bg-warn";
+        break;
+      case "requested":
+        return "bg-warn";
+        break;
+     case "skipped":
+        return "bg-warn";
+        break;
+      case "success":
+        return "bg-succ";
+        break;
+      default:
+        return "bg-warn";
+    }
+  }
+
+  let action = {};
 
   var status = "{{.Run.Status}}";
   <!-- connect(); -->
   if (status == "queued" || status == "in_progress") {
-    <!-- connect(); -->
+    connect();
     console.log('hi');
   }
 </script>
