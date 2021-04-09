@@ -40,7 +40,7 @@
       {{ range $index, $val := .Jobs.Jobs }}
       <div class="col-md-12">
         <div class="step-container" style="padding: 10px;">
-          <div class="card">
+          <div class="card job-{{$val.ID}}">
             <div class="card-body">
               <h5 class="card-title">Step #{{ $index }}: {{ $val.Name }} <i class="bi {{$val.Status | iconCase}}"></i></h5>
               <p class="lead card-lead">
@@ -59,13 +59,13 @@
                 <div class="accordian" id="steps-accordian">
                   {{range $i, $step := $val.Steps}}
                   <div class="accordian-item">
-                    <h2 class="accordion-header" id="heading-{{$step.Name | compact}}-{{$step.Number}}">
+                    <h2 class="accordion-header" >
                       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{$step.Name | compact}}-{{$step.Number}}" aria-expanded="false" aria-controls="{{$step.Name | compact}}-{{$step.Number}}">
                         {{if $step.Conclusion}}<i class="step-icon bi {{ $step.Conclusion | iconCase }}"></i>{{else}}<i class="step-icon bi {{ $step.Status | iconCase }}"></i>{{end}} #{{$step.Number}} {{ $step.Name }}
                       </button>
                     </h2>
                     <div id="{{$step.Name | compact}}-{{$step.Number}}" class="accordion-collapse collapse" aria-labelledby="heading-{{$step.Name | compact}}-{{$step.Number}}" data-bs-parent="#steps-accordian">
-                      <div class="accordion-body step-item">
+                      <div class="accordion-body step-item" id="job-${{ $val.ID }}-step-{{ $step.Number }}">
                         {{if $step.StartedAt}}
                         Started at: {{ $step.StartedAt | timeAgo }}
                         {{else}}
@@ -106,7 +106,7 @@
   function connect() {
     const websocket = new WebSocket("ws://localhost:8080/ws?id={{.Run.ID}}&repo={{.Run.Repository.Name}}");
     websocket.onopen = function(event) {
-    console.log("Successfully connected to websocket server");
+      console.log("Successfully connected to websocket server");
     };
 
     websocket.onerror = function(error) {
@@ -117,13 +117,20 @@
     websocket.onmessage = function(event) {
       action = JSON.parse(event.data);
       updateRun();
-
+      updateJob();
     };
   }
 
+  function updateJob() {
+    $.each(action.Jobs.jobs, function(index, item) {
+      if ($(`.job-${item.id}`).length == 0) {
+          let icon = (item.conclusion) ? item.conclusion : item.status;
+          $('.step-container').append(`<div class="card job-${item.id}"><div class="card-body"><h5 class="card-title">Step #${index}: ${item.name} <i class="bi ${getIcon(icon)}"></i></h5><p class="lead card-lead"><span class="fs-6 text text-muted"><i class="job-icon bi ${getIcon(icon)}"></i> Started: ${item.started_at}</span></p></div></div>`);
+      }
+    });   
+  }
+
   function updateRun() {
-    icon = "";
-    background = "";
     if(action.Run.conclusion) {
       icon = getIcon(action.Run.conclusion);
       $('.ws-lead-status').text(action.Run.conclusion)
@@ -135,6 +142,14 @@
       $('.ws-lead-status').replaceWith('<span class="badge '+getBackground(action.Run.status)+' ws-lead-status"><i class="bi '+getIcon(action.Run.status)+' ws-lead-icon" style="color: white;"></i>'+action.Run.status+'</span>')
       $('.ws-lead-status').effect("highlight", {}, 1500);
     }
+  }
+
+  function compact(str) {
+    str1 = str.replace(str, " ", "-");
+		str2 = str1.replace(str1, "@", "");
+		str3 = str2.replace(str2, "/", "");
+		str4 = str3.replace(str3, ":", "");
+    return str4
   }
 
   function getIcon(str) {
@@ -203,12 +218,10 @@
   }
 
   let action = {};
+  let status = '{{.Run.Status}}';
 
-  var status = "{{.Run.Status}}";
-  <!-- connect(); -->
   if (status == "queued" || status == "in_progress") {
     connect();
-    console.log('hi');
   }
 </script>
 {{end}}
