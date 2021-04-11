@@ -18,6 +18,10 @@
   font-size: 24px;
 }
 
+.step-container {
+  padding: 10px;
+}
+
 .btn-jumbo {
   float: right;
   margin-top: 5px;
@@ -85,4 +89,26 @@
 
 .bg-succ {
   background-color: #198754;
+}
+
+.step-failed {
+  border: 1px solid #FD4949;
+  background-color: #FFF1F1;
+}
+
+@keyframes shadowPulse {
+    0% {
+        box-shadow: 0px 0px 10px 0px hsla(0, 0%, 0%, 1);
+    }
+
+    100% {
+        box-shadow: 0px 0px 5px 0px hsla(0, 0%, 0%, 0);
+    }
+}
+
+.shadow-pulse {
+    animation-name: shadowPulse;
+    animation-duration: 1.5s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
 }

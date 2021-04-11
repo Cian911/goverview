@@ -38,11 +38,17 @@
   <div class="col-12 col-lg-8">
     <div class="row">
       {{ range $index, $val := .Jobs.Jobs }}
-      <div class="col-md-12">
+      <div class="col-md-12 job-{{ $val.ID }}">
         <div class="step-container" style="padding: 10px;">
-          <div class="card job-{{$val.ID}}">
+          <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Step #{{ $index }}: {{ $val.Name }} <i class="bi {{$val.Status | iconCase}}"></i></h5>
+              <h5 class="card-title">Step #{{ $index }}: {{ $val.Name }} 
+                {{if or (eq ($val.Status | toString) "queued") (eq ($val.Status | toString) "in_progress")}}
+                  <i class="bi {{$val.Status | iconCase}}"></i>
+                {{else}}
+                  <i class="bi {{$val.Conclusion | iconCase}}"></i>
+                {{end}}
+              </h5>
               <p class="lead card-lead">
                 <span class="fs-6 text text-muted">
                   {{if or (eq ($val.Status | toString) "queued") (eq ($val.Status | toString) "in_progress")}}
@@ -56,15 +62,15 @@
                   {{end}}
                 </span>
 
-                <div class="accordian" id="steps-accordian">
+                <div class="accordion" id="steps-accordion">
                   {{range $i, $step := $val.Steps}}
-                  <div class="accordian-item">
+                  <div class="accordion-item {{if $step.Conclusion}}{{if (eq ($step.Conclusion | toString) "failure")}}step-failed{{end}}{{end}}">
                     <h2 class="accordion-header" >
                       <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{{$step.Name | compact}}-{{$step.Number}}" aria-expanded="false" aria-controls="{{$step.Name | compact}}-{{$step.Number}}">
                         {{if $step.Conclusion}}<i class="step-icon bi {{ $step.Conclusion | iconCase }}"></i>{{else}}<i class="step-icon bi {{ $step.Status | iconCase }}"></i>{{end}} #{{$step.Number}} {{ $step.Name }}
                       </button>
                     </h2>
-                    <div id="{{$step.Name | compact}}-{{$step.Number}}" class="accordion-collapse collapse" aria-labelledby="heading-{{$step.Name | compact}}-{{$step.Number}}" data-bs-parent="#steps-accordian">
+                    <div id="{{$step.Name | compact}}-{{$step.Number}}" class="accordion-collapse collapse" aria-labelledby="heading-{{$step.Name | compact}}-{{$step.Number}}" data-bs-parent="#steps-accordion">
                       <div class="accordion-body step-item" id="job-${{ $val.ID }}-step-{{ $step.Number }}">
                         {{if $step.StartedAt}}
                         Started at: {{ $step.StartedAt | timeAgo }}
@@ -116,18 +122,40 @@
 
     websocket.onmessage = function(event) {
       action = JSON.parse(event.data);
+
+      if (action.Run.conclusion) {
+        // Close connection when job has finished
+        websocket.close();
+      }
+
       updateRun();
       updateJob();
     };
   }
 
   function updateJob() {
+    let lastJobId = (action.Jobs.jobs[0].id) ? action.Jobs.jobs[0].id : 0;
     $.each(action.Jobs.jobs, function(index, item) {
+      let icon = (item.conclusion) ? item.conclusion : item.status;
+      let steps = "";
+      $.each(item.steps, function(ind, step) {
+        let step_icon = (step.conclusion) ? step.conclusion : step.status;
+        steps += updateSteps(step, step_icon, item.html_url);
+      });
+
       if ($(`.job-${item.id}`).length == 0) {
-          let icon = (item.conclusion) ? item.conclusion : item.status;
-          $('.step-container').append(`<div class="card job-${item.id}"><div class="card-body"><h5 class="card-title">Step #${index}: ${item.name} <i class="bi ${getIcon(icon)}"></i></h5><p class="lead card-lead"><span class="fs-6 text text-muted"><i class="job-icon bi ${getIcon(icon)}"></i> Started: ${item.started_at}</span></p></div></div>`);
+        $(`.job-${lastJobId}`).after(`<div class="col-md-12 job-${item.id}"><div class="step-container"><div class="card"><div class="card-body"><h5 class="card-title">Step #${index}: ${item.name} <i class="bi ${getIcon(icon)}"></i></h5><p class="lead card-lead"><span class="fs-6 text text-muted"><i class="job-icon bi ${getIcon(icon)}"></i> Started: ${timeAgo(item.started_at)}</span></p><div class="accordion" id="steps-accordion">${steps}</div></div></div></div></div>`);
+      } else {
+        $(`.job-${item.id}`).replaceWith(`<div class="col-md-12 job-${item.id}"><div class="step-container"><div class="card"><div class="card-body"><h5 class="card-title">Step #${index}: ${item.name} <i class="bi ${getIcon(icon)}"></i></h5><p class="lead card-lead"><span class="fs-6 text text-muted"><i class="job-icon bi ${getIcon(icon)}"></i> Started: ${timeAgo(item.started_at)}</span></p><div class="accordion" id="steps-accordion">${steps}</div></div></div></div></div>`);
       }
+
+      lastJobId = item.id;
     });   
+  }
+
+  function updateSteps(item, icon, log_url) {
+    let conclusion = (item.conclusion) ? item.conclusion : "";
+    return `<div class="accordion-item ${getStatus(conclusion)}"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${compact(item.name)}-${item.number}" aria-expanded="false" aria-controls="${compact(item.name)}-${item.number}"><i class="step-icon bi ${getIcon(icon)}"></i> #${item.number} ${item.name}</button></h2><div id="${compact(item.name)}-${item.number}" class="accordion-collapse collapse" aria-labelledby="heading-${compact(item.name)}-${item.number}" data-bs-parent="#steps-accordion"><div class="accordion-body step-item" id="job-${item.id}-step-${item.number}">Started: ${timeAgo(item.started_at)} <a href="${log_url}" class="btn btn-light btn-sm btn-run" target="_blank">View Logs</a></div></div></div>`;
   }
 
   function updateRun() {
@@ -145,11 +173,26 @@
   }
 
   function compact(str) {
-    str1 = str.replace(str, " ", "-");
-		str2 = str1.replace(str1, "@", "");
-		str3 = str2.replace(str2, "/", "");
-		str4 = str3.replace(str3, ":", "");
+    str_lower = str.toLowerCase();
+    str1 = str_lower.replaceAll(" ", "-");
+		str2 = str1.replaceAll("@", "");
+		str3 = str2.replaceAll("/", "");
+		str4 = str3.replaceAll(":", "");
     return str4
+  }
+
+  function timeAgo(str) {
+    return moment(str).fromNow();
+  }
+
+  function getStatus(status) {
+    switch(status) {
+      case "failure":
+        return "step-failed";
+        break;
+      default:
+        return "";
+    }
   }
 
   function getIcon(str) {

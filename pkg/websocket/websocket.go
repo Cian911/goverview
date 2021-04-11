@@ -57,13 +57,20 @@ func Writer(conn *websocket.Conn, vars map[string]string) {
 			fmt.Printf("Doing: %v\n", t)
 
 			run, _, _ := c.WorkflowRunById(ctx, "storyful", repository, runId)
-			jobs, _, _ := c.JobsListWorkflowRun(ctx, "storyful", repository, runId, jobOpts)
+			job, _, _ := c.JobsListWorkflowRun(ctx, "storyful", repository, runId, jobOpts)
 			data := gh.ActionData{
 				Run:  run,
-				Jobs: jobs,
+				Jobs: job,
 			}
 
 			jsonString, err := json.Marshal(data)
+
+			if *run.Status == "completed" {
+				conn.WriteMessage(websocket.TextMessage, []byte(jsonString))
+				conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+				conn.Close()
+			}
+
 			if err != nil {
 				fmt.Println(err)
 			}
