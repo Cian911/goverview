@@ -20,8 +20,9 @@ var (
 	ctx         = context.Background()
 	c           = gh.NewClientWithToken(ctx, os.Getenv("GITHUB_TOKEN"))
 	cacheClient = wcache.CacheClient()
-	opts        = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
-	jobOpts     = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
+	opts        = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
+	jobOpts     = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
+	orgOpts     = &github.RepositoryListOptions{Type: "private", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 100}}
 )
 
 type rootHandler func(http.ResponseWriter, *http.Request) error
@@ -62,8 +63,13 @@ func (fn rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveIndex(w http.ResponseWriter, r *http.Request) error {
-	runs, _, _ := c.RecentWorkflowRuns(ctx, "storyful", "droptube-poc", opts)
-	html.IndexPage(w, runs)
+	repos, _, _ := c.OrganizationRepos(ctx, "storyful", orgOpts)
+	for _, repo := range repos {
+		fmt.Println(*repo.Name)
+	}
+
+	// runs, _, _ := c.RecentWorkflowRuns(ctx, "storyful", "droptube-poc", opts)
+	html.IndexPage(w, nil)
 	return nil
 }
 

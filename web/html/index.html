@@ -1,7 +1,39 @@
 {{define "title"}}Goverview{{end}}
 
 {{define "content"}}
-<h1>Index Page</h1>
+<!-- Start of new content  -->
+<div class="row">
+  <!-- Jumbotron  -->
+  <div class="col-md-12">
+    <div class="jumbotron jumbotron-fluid" style="background-color: #212121;color: white;padding: 25px">
+      <div class="container">
+        <button class="btn btn-light btn-jumbo" onclick="history.back(-1);">Back</button>
+        <h2 class="bg-dark" style="padding:5px;display:inline-block;">
+          {{ .Run.Repository.FullName }}
+        </h2>
+        <h3 class="display-4">
+          {{ .Run.Event }}
+          {{ if .Run.PullRequests }}
+          <span class="text-secondary">
+            #{{ (index .Run.PullRequests 0).Number }}
+          </span>
+          {{end}}
+        </h3>
+        <p class="lead ws-lead">
+          {{if or (eq (.Run.Status | toString) "queued") (eq (.Run.Status | toString) "in_progress") (eq (.Run.Status | toString) "waiting") (eq (.Run.Status | toString) "requested")}}
+          <span class="badge bg-warn ws-lead-status"><i class="bi {{.Run.Status | iconCase}} ws-lead-icon" style="color: white;"></i>{{ .Run.Status }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
+          {{end}}
+          {{if .Run.Conclusion }}
+          <span class="badge {{.Run.Conclusion | colorCase}} ws-lead-status"><i class="bi {{.Run.Conclusion | iconCase}} ws-lead-icon" style="color: white;"></i>{{ .Run.Conclusion }}</span> Branch <span class="badge bg-primary">{{ .Run.HeadBranch }}</span>
+          {{else}}
+          {{end}}
+        </p>
+      </div>
+    </div>
+  </div>
+  <!-- End Jumbotron -->
+</div>
+
 
 <div class="row row-cols-4">
   {{ range $val := .WorkflowRuns}}
