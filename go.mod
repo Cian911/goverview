@@ -8,6 +8,7 @@ require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-github/v33 v33.0.1-0.20210212185656-ff3975e723d3
+	github.com/google/go-github/v34 v34.0.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2 // indirect
