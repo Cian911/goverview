@@ -12,7 +12,7 @@ import (
 	wcache "github.com/cian911/goverview/pkg/cache"
 	"github.com/cian911/goverview/pkg/gh"
 	"github.com/cian911/goverview/web/html"
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v34/github"
 	"github.com/gorilla/mux"
 )
 
@@ -22,7 +22,7 @@ var (
 	cacheClient = wcache.CacheClient()
 	opts        = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
 	jobOpts     = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
-	orgOpts     = &github.RepositoryListOptions{Type: "private", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 100}}
+	orgOpts     = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 10}}
 )
 
 type rootHandler func(http.ResponseWriter, *http.Request) error
@@ -64,26 +64,37 @@ func (fn rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func serveIndex(w http.ResponseWriter, r *http.Request) error {
 	repos, _, _ := c.OrganizationRepos(ctx, "storyful", orgOpts)
+	runs := []gh.RecentRuns{}
+
 	for _, repo := range repos {
-		fmt.Println(*repo.Name)
+		run, _, _ := c.RecentWorkflowRuns(ctx, "storyful", *repo.Name, opts)
+		recentRun := gh.RecentRuns{
+			Repository: *repo.Name,
+			Runs:       run.WorkflowRuns,
+		}
+		runs = append(runs, recentRun)
 	}
 
-	// runs, _, _ := c.RecentWorkflowRuns(ctx, "storyful", "droptube-poc", opts)
-	html.IndexPage(w, nil)
+	err := html.IndexPage(w, runs)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Error rendering index template: %v", err))
+	}
+
 	return nil
 }
 
 func serveActions(w http.ResponseWriter, r *http.Request) error {
 	vars := mux.Vars(r)
 	key := vars["id"]
+	repo := vars["repo"]
 	runId, err := strconv.ParseInt(key, 10, 64)
 
 	if err != nil {
 		return NewHTTPError(err, 400, "Bad request : invalid ID.")
 	}
 
-	run, _, _ := c.WorkflowRunById(ctx, "storyful", "droptube-poc", runId)
-	jobs, _, _ := c.JobsListWorkflowRun(ctx, "storyful", "droptube-poc", runId, jobOpts)
+	run, _, _ := c.WorkflowRunById(ctx, "storyful", repo, runId)
+	jobs, _, _ := c.JobsListWorkflowRun(ctx, "storyful", repo, runId, jobOpts)
 	data := gh.ActionData{
 		Run:  run,
 		Jobs: jobs,
@@ -100,7 +111,7 @@ func serveActions(w http.ResponseWriter, r *http.Request) error {
 func HandleRoutes(router *mux.Router) {
 	// Web Routes
 	router.Handle("/", cacheClient.Middleware(rootHandler(serveIndex)))
-	router.Handle("/workflow/{id}", cacheClient.Middleware(rootHandler(serveActions)))
+	router.Handle("/workflow/{repo}/{id}", cacheClient.Middleware(rootHandler(serveActions)))
 
 	// API routes
 	router.Handle("/api/runs", rootHandler(workflowRuns))

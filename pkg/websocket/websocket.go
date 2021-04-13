@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/cian911/goverview/pkg/gh"
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v34/github"
 	"github.com/gorilla/websocket"
 )
 

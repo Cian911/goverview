@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/cian911/goverview/pkg/gh"
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v34/github"
 	"github.com/xeonx/timeago"
 )
 
 //go:embed *
 var files embed.FS
 
-func IndexPage(w io.Writer, runs *github.WorkflowRuns) error {
+func IndexPage(w io.Writer, runs []gh.RecentRuns) error {
 	index := parse("index.html")
 	return index.Execute(w, runs)
 }

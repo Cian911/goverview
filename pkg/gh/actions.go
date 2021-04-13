@@ -3,7 +3,7 @@ package gh
 import (
 	"context"
 
-	"github.com/google/go-github/v33/github"
+	"github.com/google/go-github/v34/github"
 )
 
 type ActionData struct {
