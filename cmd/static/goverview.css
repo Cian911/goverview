@@ -112,3 +112,7 @@
     animation-iteration-count: 1;
     animation-timing-function: linear;
 }
+
+.index-container {
+  padding: 15px;
+}
