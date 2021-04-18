@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/cian911/goverview/pkg/gh"
-	"github.com/google/go-github/v34/github"
+	"github.com/google/go-github/v35/github"
 	"github.com/xeonx/timeago"
 )
 
@@ -27,6 +27,9 @@ func ActionsPage(w io.Writer, jobs *gh.ActionData) error {
 
 func parse(file string) *template.Template {
 	funcs := template.FuncMap{
+		"add": func(index int) int {
+			return index + 1
+		},
 		"toString": func(str *string) string {
 			return *str
 		},

@@ -16,21 +16,31 @@
   <!-- End Jumbotron -->
 </div>
 
+<div class="row">
+  <div class="col-md-12">
+    Place some jobs statistics here for the organization.
+  </div>
+</div>
 
 <div class="row row-cols-4 index-container">
   {{ range $val := .}}
     {{ if not $val.Runs }}
     {{else}}
       {{ range $run := $val.Runs }}
-      <div class="col">
+      <div class="col repo-card">
         <div class="card">
           <div class="card-body">
-            <div class="card-title">{{$val.Repository}} - <div class="text-secondary">#{{ $run.RunNumber }}</div></div>
+            <div class="card-title">
+              <h4 class="bg-dark repo-information">
+                {{$val.Repository}} <span class="text-secondary">#{{ $run.RunNumber }}</span>
+              </h4>
+            </div>
             <div class="card-text">
-              {{ $run.Event }} - {{ $run.Status }}
-              {{ $run.ID }}
-              {{ $run.NodeID }}
-              <a href="/workflow/{{ $run.Repository.Name }}/{{ $run.ID }}">#{{ $run.ID }}</a>
+              <div class="event-information">
+                <span class="badge bg-primary">{{ $run.Event }}</span>
+                <span class="badge bg-success">{{ $run.Status }}</span>
+              </div>
+              <a href="/workflow/{{ $run.Repository.Name }}/{{ $run.ID }}">View Action</a>
             </div>
           </div>
         </div>

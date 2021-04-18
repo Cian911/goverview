@@ -12,17 +12,18 @@ import (
 	wcache "github.com/cian911/goverview/pkg/cache"
 	"github.com/cian911/goverview/pkg/gh"
 	"github.com/cian911/goverview/web/html"
-	"github.com/google/go-github/v34/github"
+	"github.com/google/go-github/v35/github"
 	"github.com/gorilla/mux"
 )
 
 var (
-	ctx         = context.Background()
-	c           = gh.NewClientWithToken(ctx, os.Getenv("GITHUB_TOKEN"))
-	cacheClient = wcache.CacheClient()
-	opts        = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
-	jobOpts     = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
-	orgOpts     = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 10}}
+	ctx          = context.Background()
+	c            = gh.NewClientWithToken(ctx, os.Getenv("GITHUB_TOKEN"))
+	cacheClient  = wcache.CacheClient()
+	organization = "storyful"
+	opts         = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 1}}
+	jobOpts      = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
+	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 10}}
 )
 
 type rootHandler func(http.ResponseWriter, *http.Request) error
@@ -63,11 +64,11 @@ func (fn rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveIndex(w http.ResponseWriter, r *http.Request) error {
-	repos, _, _ := c.OrganizationRepos(ctx, "storyful", orgOpts)
+	repos, _, _ := c.OrganizationRepos(ctx, organization, orgOpts)
 	runs := []gh.RecentRuns{}
 
 	for _, repo := range repos {
-		run, _, _ := c.RecentWorkflowRuns(ctx, "storyful", *repo.Name, opts)
+		run, _, _ := c.RecentWorkflowRuns(ctx, organization, *repo.Name, opts)
 		recentRun := gh.RecentRuns{
 			Repository: *repo.Name,
 			Runs:       run.WorkflowRuns,
@@ -93,8 +94,8 @@ func serveActions(w http.ResponseWriter, r *http.Request) error {
 		return NewHTTPError(err, 400, "Bad request : invalid ID.")
 	}
 
-	run, _, _ := c.WorkflowRunById(ctx, "storyful", repo, runId)
-	jobs, _, _ := c.JobsListWorkflowRun(ctx, "storyful", repo, runId, jobOpts)
+	run, _, _ := c.WorkflowRunById(ctx, organization, repo, runId)
+	jobs, _, _ := c.JobsListWorkflowRun(ctx, organization, repo, runId, jobOpts)
 	data := gh.ActionData{
 		Run:  run,
 		Jobs: jobs,
@@ -120,7 +121,7 @@ func HandleRoutes(router *mux.Router) {
 }
 
 func workflowRuns(w http.ResponseWriter, r *http.Request) error {
-	runs, resp, err := c.RecentWorkflowRuns(ctx, "storyful", "droptube-poc", opts)
+	runs, resp, err := c.RecentWorkflowRuns(ctx, organization, "droptube-poc", opts)
 	if err != nil {
 		return NewHTTPError(err, resp.StatusCode, "Error from Github API. Please check your token for the correct scopes, access rights and/or rate limits.")
 	}
@@ -138,7 +139,7 @@ func workflowRun(w http.ResponseWriter, r *http.Request) error {
 		return NewHTTPError(err, 400, "Bad request : invalid ID.")
 	}
 
-	run, resp, err := c.WorkflowRunById(ctx, "storyful", "droptube-poc", runId)
+	run, resp, err := c.WorkflowRunById(ctx, organization, "droptube-poc", runId)
 
 	if resp.StatusCode == 404 {
 		return NewHTTPError(nil, 404, "The requested workflow run was not found.")
@@ -160,7 +161,7 @@ func workflowJob(w http.ResponseWriter, r *http.Request) error {
 		return NewHTTPError(err, 400, "Bad request : invalid ID.")
 	}
 
-	run, resp, err := c.JobsListWorkflowRun(ctx, "storyful", "droptube-poc", runId, jobOpts)
+	run, resp, err := c.JobsListWorkflowRun(ctx, organization, "droptube-poc", runId, jobOpts)
 
 	if resp.StatusCode == 404 {
 		return NewHTTPError(nil, 404, "The requested workflow run was not found.")
