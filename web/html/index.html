@@ -37,10 +37,17 @@
             </div>
             <div class="card-text">
               <div class="event-information">
+                {{ if $run.Conclusion }}
+                <span class="badge {{ $run.Conclusion | colorCase }}">{{ $run.Conclusion }}</span>
+                {{ else }}
+                <span class="badge {{ $run.Conclusion | colorCase }}">{{ $run.Status }}</span>
+                {{ end }}
                 <span class="badge bg-primary">{{ $run.Event }}</span>
-                <span class="badge bg-success">{{ $run.Status }}</span>
+                <a href="/workflow/{{ $run.Repository.Name }}/{{ $run.ID }}">View Action</a>
               </div>
-              <a href="/workflow/{{ $run.Repository.Name }}/{{ $run.ID }}">View Action</a>
+              <div class="time-information">
+                <span class="text-muted">{{ $run.CreatedAt | timeAgo }}</span>
+              </div>
             </div>
           </div>
         </div>

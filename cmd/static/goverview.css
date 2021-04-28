@@ -140,7 +140,15 @@
 }
 
 .event-information {
+  display: flex;
+  justify-content: space-between;
   padding: 5px;
+}
+
+.time-information {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
 }
 
 .event-information > span {
@@ -149,4 +157,8 @@
 
 .repo-card {
   margin-top: 10px;
+}
+
+.badge {
+  min-width: 120px !important;
 }
