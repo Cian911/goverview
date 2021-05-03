@@ -115,11 +115,33 @@
   <!-- End Steps -->
 
   <div class="col-12 col-lg-4">
-    <ul class="list-group actions-list-group">
-      <li class="list-group-item"><i class="bi bi-github"></i> Github Action Raw Logs</li>
-      <li class="list-group-item"><i class="bi bi-slack"></i> Link to Action</li>
-      <li class="list-group-item">Something else</li>
-    </ul>
+    <div class="action-sidebar">
+      <div class="card">
+        <div class="card-header">
+          Legend  
+        </div>
+        <div class="card-body">
+          <ul class="list-group">
+            <li class="list-group-item">
+              <i class="step-icon bi bi-check"></i> - Success
+            </li>
+            <li class="list-group-item">
+              <i class="step-icon bi bi-x"></i> - Failure
+            </li>
+            <li class="list-group-item">
+              <i class="step-icon bi bi-exclamation-circle"></i> - Skipped
+            </li>
+            <li class="list-group-item">
+              <i class="step-icon bi bi-arrow-clockwise icn-spinner"></i> - In Progress
+            </li>
+          </ul> 
+        </div>
+      </div>
+      <ul class="list-group actions-list-group">
+        <li class="list-group-item"><i class="bi bi-github"></i> <a href="{{ .Run.Repository.HTMLURL }}" target="_blank">Github Repository</a></li>
+        <li class="list-group-item"><i class="bi bi-github"></i> <a href="{{ .Run.HTMLURL }}" target="_blank">Action Logs</a></li>
+      </ul>
+    </div>
   </div>
 </div>
 

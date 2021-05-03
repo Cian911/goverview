@@ -1,4 +1,8 @@
 .actions-list-group {
+  padding-top: 10px;
+}
+
+.action-sidebar {
   padding: 10px;
 }
 
@@ -16,6 +20,7 @@
 
 .step-icon:before {
   font-size: 24px;
+  line-height: 0 !important;
 }
 
 .step-container {
@@ -161,4 +166,14 @@
 
 .badge {
   min-width: 120px !important;
+  line-height: 1.5 !important;
+}
+
+.home-statistics {
+  text-align: center;
+  line-height: 2;
+}
+
+.stats-value {
+  font-size: 36px;
 }

@@ -18,7 +18,26 @@
 
 <div class="row">
   <div class="col-md-12">
-    Place some jobs statistics here for the organization.
+    <div class="row row-cols-3 index-container">
+      <div class="col">
+        <div class="card home-statistics">
+          <span class="text-muted">Successful Runs</span>
+          <span class="stats-value">15</span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card home-statistics">
+          <span class="text-muted">Failed Runs</span>
+          <span class="stats-value">5</span>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card home-statistics">
+          <span class="text-muted">Billable Hours</span>
+          <span class="stats-value">150 hours</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -38,9 +57,9 @@
             <div class="card-text">
               <div class="event-information">
                 {{ if $run.Conclusion }}
-                <span class="badge {{ $run.Conclusion | colorCase }}">{{ $run.Conclusion }}</span>
+                <span class="badge {{ $run.Conclusion | colorCase }}"><i class="bi {{$run.Conclusion | iconCase}}" style="color:white;"></i>{{ $run.Conclusion }}</span>
                 {{ else }}
-                <span class="badge {{ $run.Conclusion | colorCase }}">{{ $run.Status }}</span>
+                <span class="badge {{ $run.Status | colorCase }}"><i class="bi {{$run.Status | iconCase}}" style="color:white;"></i> {{ $run.Status }}</span>
                 {{ end }}
                 <span class="badge bg-primary">{{ $run.Event }}</span>
                 <a href="/workflow/{{ $run.Repository.Name }}/{{ $run.ID }}">View Action</a>
