@@ -56,14 +56,7 @@ func Writer(conn *websocket.Conn, vars map[string]string) {
 		for t := range ticker.C {
 			fmt.Printf("Doing: %v\n", t)
 
-			run, _, _ := c.WorkflowRunById(ctx, "storyful", repository, runId)
-			job, _, _ := c.JobsListWorkflowRun(ctx, "storyful", repository, runId, jobOpts)
-			data := gh.ActionData{
-				Run:  run,
-				Jobs: job,
-			}
-
-			jsonString, err := json.Marshal(data)
+			jsonString, err := actionData(repository, runId)
 
 			if *run.Status == "completed" {
 				conn.WriteMessage(websocket.TextMessage, []byte(jsonString))
@@ -82,3 +75,18 @@ func Writer(conn *websocket.Conn, vars map[string]string) {
 		}
 	}
 }
+
+func actionData(repository string, runId int) (string, error) {
+	run, _, _ := c.WorkflowRunById(ctx, "storyful", repository, runId)
+	job, _, _ := c.JobsListWorkflowRun(ctx, "storyful", repository, runId, jobOpts)
+	data := gh.ActionData{
+		Run:  run,
+		Jobs: job,
+	}
+
+	jsonString, err := json.Marshal(data)
+}
+
+// func indexData() string {
+// run, _, _ := c.WorkflowRunById(ctx, "storyful", repository, runId)
+// }

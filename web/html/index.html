@@ -51,4 +51,22 @@
     
   {{ end }}
 </div>
+
+<script>
+function connect() {
+  const websocket = new WebSocket("ws://localhost:8080/ws?index=true")
+    websocket.open = function(event) {
+      console.log("Successfully connected to websocket server");
+    };
+
+    websocket.onerror = function(error) {
+      console.error("Error connecting to websocket server: ", error);
+    };
+
+    websocket.onmessage = function(event) {
+      console.log(event.data);
+      actions = JSON.parse(event.data);
+    };
+}
+</script>
 {{end}}
