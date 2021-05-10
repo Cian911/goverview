@@ -16,31 +16,6 @@
   <!-- End Jumbotron -->
 </div>
 
-<div class="row">
-  <div class="col-md-12">
-    <div class="row row-cols-3 index-container">
-      <div class="col">
-        <div class="card home-statistics">
-          <span class="text-muted">Successful Runs</span>
-          <span class="stats-value">15</span>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card home-statistics">
-          <span class="text-muted">Failed Runs</span>
-          <span class="stats-value">5</span>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card home-statistics">
-          <span class="text-muted">Billable Hours</span>
-          <span class="stats-value">150 hours</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="row row-cols-4 index-container">
   {{ range $val := .}}
     {{ if not $val.Runs }}
