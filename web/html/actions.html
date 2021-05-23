@@ -147,7 +147,7 @@
 
 <script>
   function connect() {
-    const websocket = new WebSocket("ws://localhost:8080/ws?id={{.Run.ID}}&repo={{.Run.Repository.Name}}");
+    const websocket = new WebSocket("ws://localhost:8080/ws?id={{.Run.ID}}&repo={{.Run.Repository.Name}}&path=action");
     websocket.onopen = function(event) {
       console.log("Successfully connected to websocket server");
     };

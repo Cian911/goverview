@@ -22,7 +22,7 @@
     {{else}}
       {{ range $run := $val.Runs }}
       <div class="col repo-card">
-        <div class="card">
+        <div class="card run-{{ $run.WorkflowID }}">
           <div class="card-body">
             <div class="card-title">
               <h4 class="bg-dark repo-information">
@@ -53,8 +53,10 @@
 </div>
 
 <script>
+connect();
+
 function connect() {
-  const websocket = new WebSocket("ws://localhost:8080/ws?index=true")
+    const websocket = new WebSocket("ws://localhost:8080/ws?path=index");
     websocket.open = function(event) {
       console.log("Successfully connected to websocket server");
     };
@@ -65,8 +67,24 @@ function connect() {
 
     websocket.onmessage = function(event) {
       console.log(event.data);
-      actions = JSON.parse(event.data);
+      runs = JSON.parse(event.data);
+      updateRuns(runs);
     };
+}
+
+
+function updateRuns(runs) {
+    let lastRunId = (runs[0].Runs[0].id) ? runs[0].Runs[0].id : 0;
+    
+    $.each(runs, function(index, item) {
+        let icon = (item.Runs[0].status) ? item.Runs[0].status : item.Runs[0].conclusion;
+        console.log(item.Runs, item.Runs[0].workflow_id);
+
+        if ($(`.card.job-${item.Runs[0].workflow_id}`).length > 0) {
+            $(`.card.job-${item.Runs[0].workflow_id}.card-body.card-text.event-information`).replaceWith(`<div class="event-information"><span class="badge ${getIcon(icon)}"><i class="bi ${getIcon(icon)}">${icon}</i></span><span class="badge bg-primary">push</span><a href="/workflow/${item.Repository}/${item.Runs[0].id}">View Action</a></div>`);
+            $(`.card.job-${item.Runs[0].workflow_id}.card-body.card-text.time-information`).replaceWith(`<div class="time-information"><span class="text-muted">${timeAgo(item.Runs[0].created_at)}</span></div>`);
+        }
+    });
 }
 </script>
 {{end}}

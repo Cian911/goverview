@@ -27,6 +27,9 @@ func ActionsPage(w io.Writer, jobs *gh.ActionData) error {
 
 func parse(file string) *template.Template {
 	funcs := template.FuncMap{
+		"toLower": func(str *string) string {
+			return strings.ToLower(*str)
+		},
 		"add": func(index int) int {
 			return index + 1
 		},

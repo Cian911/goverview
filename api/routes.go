@@ -23,7 +23,7 @@ var (
 	organization = "storyful"
 	opts         = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 1}}
 	jobOpts      = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
-	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 10}}
+	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 16}}
 )
 
 type rootHandler func(http.ResponseWriter, *http.Request) error
@@ -69,6 +69,9 @@ func serveIndex(w http.ResponseWriter, r *http.Request) error {
 
 	for _, repo := range repos {
 		run, _, _ := c.RecentWorkflowRuns(ctx, organization, *repo.Name, opts)
+		if len(run.WorkflowRuns) == 0 {
+			continue
+		}
 		recentRun := gh.RecentRuns{
 			Repository: *repo.Name,
 			Runs:       run.WorkflowRuns,

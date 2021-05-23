@@ -18,10 +18,12 @@ import (
 const tickerTime = 15 * time.Second
 
 var (
-	ctx     = context.Background()
-	c       = gh.NewClientWithToken(ctx, os.Getenv("GITHUB_TOKEN"))
-	opts    = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
-	jobOpts = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
+	ctx          = context.Background()
+	c            = gh.NewClientWithToken(ctx, os.Getenv("GITHUB_TOKEN"))
+	opts         = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
+	jobOpts      = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
+	organization = "storyful"
+	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 16}}
 )
 
 var upgrader = websocket.Upgrader{
@@ -42,13 +44,29 @@ func Upgrade(w http.ResponseWriter, r *http.Request) (*websocket.Conn, error) {
 }
 
 func Writer(conn *websocket.Conn, vars map[string]string) {
-	runId, err := strconv.ParseInt(vars["id"], 10, 64)
+	jsonString := []byte{}
+	path := vars["path"]
 
-	if err != nil {
-		log.Fatalf("Could not parse websockert param: %v", err)
+	switch path {
+	case "action":
+		runId, err := strconv.ParseInt(vars["id"], 10, 64)
+
+		if err != nil {
+			log.Fatalf("Could not parse websockert param: %v", err)
+		}
+
+		repository := vars["repo"]
+
+		jsonString = actionData(repository, runId)
+	case "index":
+		jsonString = indexData()
+	default:
+		jsonString = nil
 	}
 
-	repository := vars["repo"]
+	// if err != nil {
+	// log.Fatalf("Failed to query data in websocket connection", err)
+	// }
 
 	for {
 		ticker := time.NewTicker(tickerTime)
@@ -56,17 +74,15 @@ func Writer(conn *websocket.Conn, vars map[string]string) {
 		for t := range ticker.C {
 			fmt.Printf("Doing: %v\n", t)
 
-			jsonString, err := actionData(repository, runId)
+			//      if *run.Status == "completed" {
+			// conn.WriteMessage(websocket.TextMessage, []byte(jsonString))
+			// conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			// conn.Close()
+			// }
 
-			if *run.Status == "completed" {
-				conn.WriteMessage(websocket.TextMessage, []byte(jsonString))
-				conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-				conn.Close()
-			}
-
-			if err != nil {
-				fmt.Println(err)
-			}
+			// if err != nil {
+			// fmt.Println(err)
+			// }
 
 			if err := conn.WriteMessage(websocket.TextMessage, []byte(jsonString)); err != nil {
 				fmt.Println(err)
@@ -76,7 +92,7 @@ func Writer(conn *websocket.Conn, vars map[string]string) {
 	}
 }
 
-func actionData(repository string, runId int) (string, error) {
+func actionData(repository string, runId int64) []byte {
 	run, _, _ := c.WorkflowRunById(ctx, "storyful", repository, runId)
 	job, _, _ := c.JobsListWorkflowRun(ctx, "storyful", repository, runId, jobOpts)
 	data := gh.ActionData{
@@ -84,9 +100,28 @@ func actionData(repository string, runId int) (string, error) {
 		Jobs: job,
 	}
 
-	jsonString, err := json.Marshal(data)
+	jsonString, _ := json.Marshal(data)
+	return jsonString
 }
 
-// func indexData() string {
-// run, _, _ := c.WorkflowRunById(ctx, "storyful", repository, runId)
-// }
+func indexData() []byte {
+	// TODO: Keep list of repos stored in memory somewhere rather then making a call every time
+	// TODO: Return an error here.. and above
+	repos, _, _ := c.OrganizationRepos(ctx, organization, orgOpts)
+	runs := []gh.RecentRuns{}
+
+	for _, repo := range repos {
+		run, _, _ := c.RecentWorkflowRuns(ctx, organization, *repo.Name, &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 1}})
+		if len(run.WorkflowRuns) == 0 {
+			continue
+		}
+		recentRun := gh.RecentRuns{
+			Repository: *repo.Name,
+			Runs:       run.WorkflowRuns,
+		}
+		runs = append(runs, recentRun)
+	}
+
+	jsonString, _ := json.Marshal(runs)
+	return jsonString
+}
