@@ -23,7 +23,7 @@ var (
 	opts         = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
 	jobOpts      = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
 	organization = "storyful"
-	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 16}}
+	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 50}}
 )
 
 var upgrader = websocket.Upgrader{

@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
+	"time"
 
 	wcache "github.com/cian911/goverview/pkg/cache"
 	"github.com/cian911/goverview/pkg/gh"
@@ -23,7 +25,7 @@ var (
 	organization = "storyful"
 	opts         = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 1}}
 	jobOpts      = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
-	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 16}}
+	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 50}}
 )
 
 type rootHandler func(http.ResponseWriter, *http.Request) error
@@ -72,12 +74,17 @@ func serveIndex(w http.ResponseWriter, r *http.Request) error {
 		if len(run.WorkflowRuns) == 0 {
 			continue
 		}
+
+		createdAt, _ := time.Parse("2006-01-02T15:04:05-0700", run.WorkflowRuns[0].CreatedAt.String())
 		recentRun := gh.RecentRuns{
 			Repository: *repo.Name,
+			CreatedAt:  createdAt,
 			Runs:       run.WorkflowRuns,
 		}
 		runs = append(runs, recentRun)
 	}
+
+	sort.Sort(gh.ByCreation(runs))
 
 	err := html.IndexPage(w, runs)
 	if err != nil {
