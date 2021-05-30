@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"strconv"
 	"time"
 
@@ -84,7 +83,7 @@ func serveIndex(w http.ResponseWriter, r *http.Request) error {
 		runs = append(runs, recentRun)
 	}
 
-	sort.Sort(gh.ByCreation(runs))
+	// sort.Sort(gh.ByCreation(runs))
 
 	err := html.IndexPage(w, runs)
 	if err != nil {
