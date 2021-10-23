@@ -22,7 +22,7 @@ var (
 	c            = gh.NewClientWithToken(ctx, os.Getenv("GITHUB_TOKEN"))
 	opts         = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
 	jobOpts      = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 25}}
-	organization = "storyful"
+	organization = "YOUR_ORG"
 	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 50}}
 )
 
@@ -93,8 +93,8 @@ func Writer(conn *websocket.Conn, vars map[string]string) {
 }
 
 func actionData(repository string, runId int64) []byte {
-	run, _, _ := c.WorkflowRunById(ctx, "storyful", repository, runId)
-	job, _, _ := c.JobsListWorkflowRun(ctx, "storyful", repository, runId, jobOpts)
+	run, _, _ := c.WorkflowRunById(ctx, "YOUR_ORG", repository, runId)
+	job, _, _ := c.JobsListWorkflowRun(ctx, "YOUR_ORG", repository, runId, jobOpts)
 	data := gh.ActionData{
 		Run:  run,
 		Jobs: job,

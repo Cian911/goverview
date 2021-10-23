@@ -21,7 +21,7 @@ var (
 	ctx          = context.Background()
 	c            = gh.NewClientWithToken(ctx, os.Getenv("GITHUB_TOKEN"))
 	cacheClient  = wcache.CacheClient()
-	organization = "storyful"
+	organization = "YOUR_ORG"
 	opts         = &github.ListWorkflowRunsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 1}}
 	jobOpts      = &github.ListWorkflowJobsOptions{ListOptions: github.ListOptions{Page: 1, PerPage: 3}}
 	orgOpts      = &github.RepositoryListByOrgOptions{Type: "all", Sort: "updated", Direction: "desc", ListOptions: github.ListOptions{Page: 1, PerPage: 50}}
@@ -130,7 +130,7 @@ func HandleRoutes(router *mux.Router) {
 }
 
 func workflowRuns(w http.ResponseWriter, r *http.Request) error {
-	runs, resp, err := c.RecentWorkflowRuns(ctx, organization, "droptube-poc", opts)
+	runs, resp, err := c.RecentWorkflowRuns(ctx, organization, "", opts)
 	if err != nil {
 		return NewHTTPError(err, resp.StatusCode, "Error from Github API. Please check your token for the correct scopes, access rights and/or rate limits.")
 	}
@@ -148,7 +148,7 @@ func workflowRun(w http.ResponseWriter, r *http.Request) error {
 		return NewHTTPError(err, 400, "Bad request : invalid ID.")
 	}
 
-	run, resp, err := c.WorkflowRunById(ctx, organization, "droptube-poc", runId)
+	run, resp, err := c.WorkflowRunById(ctx, organization, "", runId)
 
 	if resp.StatusCode == 404 {
 		return NewHTTPError(nil, 404, "The requested workflow run was not found.")
@@ -170,7 +170,7 @@ func workflowJob(w http.ResponseWriter, r *http.Request) error {
 		return NewHTTPError(err, 400, "Bad request : invalid ID.")
 	}
 
-	run, resp, err := c.JobsListWorkflowRun(ctx, organization, "droptube-poc", runId, jobOpts)
+	run, resp, err := c.JobsListWorkflowRun(ctx, organization, "", runId, jobOpts)
 
 	if resp.StatusCode == 404 {
 		return NewHTTPError(nil, 404, "The requested workflow run was not found.")
