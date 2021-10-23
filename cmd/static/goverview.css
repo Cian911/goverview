@@ -1,0 +1,179 @@
+.actions-list-group {
+  padding-top: 10px;
+}
+
+.action-sidebar {
+  padding: 10px;
+}
+
+.hightlight {
+  background-color: #ccc !important;
+}
+
+.job-icon {
+  padding-right: 5px;
+}
+
+.job-icon:before {
+  font-size: 24px;
+}
+
+.step-icon:before {
+  font-size: 24px;
+  line-height: 0 !important;
+}
+
+.step-container {
+  padding: 10px;
+}
+
+.btn-jumbo {
+  float: right;
+  margin-top: 5px;
+}
+
+.bi-x {
+  color: red;
+}
+
+.bi-check {
+  color: green;
+}
+
+.bi-gear {
+  color: orange;
+}
+
+.bi-exclamation-circle {
+  color: orange;
+}
+
+.bi-arrow-clockwise {
+  color: #3680D1;
+}
+
+.card-lead {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-run {
+  display: inline-block;
+  margin-top: 10px;
+  width: 120px;
+  border-color: #E6E7E7;
+}
+
+.icn-spinner {
+  animation: spin-animation 0.8s infinite;
+  display: inline-block;
+}
+
+@keyframes spin-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(359deg);
+  }
+}
+
+.step-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.bg-dang {
+  background-color: #dc3545;
+}
+
+.bg-warn {
+  background-color: #ffc107;
+}
+
+.bg-succ {
+  background-color: #198754;
+}
+
+.step-failed {
+  border: 1px solid #FD4949;
+  background-color: #FFF1F1;
+}
+
+@keyframes shadowPulse {
+    0% {
+        box-shadow: 0px 0px 10px 0px hsla(0, 0%, 0%, 1);
+    }
+
+    100% {
+        box-shadow: 0px 0px 5px 0px hsla(0, 0%, 0%, 0);
+    }
+}
+
+.shadow-pulse {
+    animation-name: shadowPulse;
+    animation-duration: 1.5s;
+    animation-iteration-count: 1;
+    animation-timing-function: linear;
+}
+
+.index-container {
+  padding: 15px;
+}
+
+.sqipple {
+  border: 0 solid;
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0);
+  outline-offset: 0px;
+  outline: 1px solid;
+  outline-color: #595959;
+  text-shadow: none;
+  transition: all 1250ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.sqipple:hover {
+  border: 1px solid;
+  outline-color: #595959;
+  outline-offset: 15px;
+}
+
+.repo-information {
+  color: white;
+  padding: 5px;
+  text-align: center;
+}
+
+.event-information {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+}
+
+.time-information {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+}
+
+.event-information > span {
+  color: white;
+}
+
+.repo-card {
+  margin-top: 10px;
+}
+
+.badge {
+  min-width: 120px !important;
+  line-height: 1.5 !important;
+}
+
+.home-statistics {
+  text-align: center;
+  line-height: 2;
+}
+
+.stats-value {
+  font-size: 36px;
+}
